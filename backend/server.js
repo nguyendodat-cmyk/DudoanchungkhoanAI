@@ -6,10 +6,20 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { getStockPrice, getStockHistory, getPopularStocks } from './services/tcbsAPI.js';
+
+// Import API services
+import * as tcbsAPI from './services/tcbsAPI.js';
+import * as enhancedMockAPI from './services/enhancedMockAPI.js';
 
 // Load environment variables
 dotenv.config();
+
+// ⚙️ API Configuration - Change this to switch between services
+const USE_MOCK_API = true; // true = Enhanced Mock, false = TCBS Real API
+
+// Select API service
+const apiService = USE_MOCK_API ? enhancedMockAPI : tcbsAPI;
+const { getStockPrice, getStockHistory, getPopularStocks } = apiService;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,11 +44,15 @@ app.get('/', (req, res) => {
     status: 'ok',
     message: 'DudoanchungkhoanAI Backend API',
     version: '1.0.0',
+    apiMode: USE_MOCK_API ? 'Enhanced Mock (Simulated Real-time)' : 'TCBS Real API',
     endpoints: {
       stock_price: '/api/stock/:ticker',
       stock_history: '/api/stock/:ticker/history?days=30',
       popular_stocks: '/api/stocks/popular'
-    }
+    },
+    note: USE_MOCK_API
+      ? 'Using simulated data with realistic market behavior'
+      : 'Connected to TCBS real-time stock API'
   });
 });
 
@@ -157,9 +171,15 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log('='.repeat(50));
   console.log(`🚀 Backend Server đang chạy tại http://localhost:${PORT}`);
-  console.log(`📊 API Endpoints:`);
+  console.log(`📊 API Mode: ${USE_MOCK_API ? '🎭 Enhanced Mock (Simulated)' : '📡 TCBS Real API'}`);
+  console.log(`📈 API Endpoints:`);
   console.log(`   - GET /api/stock/:ticker`);
   console.log(`   - GET /api/stock/:ticker/history?days=30`);
   console.log(`   - GET /api/stocks/popular`);
+  console.log('='.repeat(50));
+  if (USE_MOCK_API) {
+    console.log('ℹ️  Dùng dữ liệu mô phỏng với biến động giá realistic');
+    console.log('ℹ️  Để dùng API thật, đổi USE_MOCK_API = false trong server.js');
+  }
   console.log('='.repeat(50));
 });

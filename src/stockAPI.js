@@ -2,7 +2,7 @@
 // Toggle giữa Mock và Real API bằng cách thay đổi USE_REAL_API
 
 // ⚙️ CẤU HÌNH: Đổi thành true để dùng API thật từ backend
-const USE_REAL_API = false; // false = Mock Data, true = Real API
+const USE_REAL_API = true; // false = Frontend Mock, true = Backend API
 const BACKEND_URL = 'http://localhost:3000'; // URL của backend server
 
 // ==================== REAL API FUNCTIONS ====================

@@ -1,7 +1,47 @@
-// MOCK DATA API - For Demo/Testing
-// Dữ liệu giả để test UI khi API thật bị CORS
+// STOCK API - Hỗ trợ cả Mock Data và Real API
+// Toggle giữa Mock và Real API bằng cách thay đổi USE_REAL_API
 
-export async function fetchStockPrice(ticker) {
+// ⚙️ CẤU HÌNH: Đổi thành true để dùng API thật từ backend
+const USE_REAL_API = true; // false = Frontend Mock, true = Backend API
+const BACKEND_URL = 'http://localhost:3000'; // URL của backend server
+
+// ==================== REAL API FUNCTIONS ====================
+
+async function fetchStockPriceReal(ticker) {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/stock/${ticker.toUpperCase()}`);
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Không thể lấy dữ liệu cổ phiếu');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error fetching real stock price:', error);
+    throw new Error('Không thể kết nối đến server. Vui lòng kiểm tra backend có đang chạy không.');
+  }
+}
+
+async function fetchStockHistoryReal(ticker, days = 30) {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/stock/${ticker.toUpperCase()}/history?days=${days}`);
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Không thể lấy lịch sử giá');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error fetching real stock history:', error);
+    throw new Error('Không thể kết nối đến server. Vui lòng kiểm tra backend có đang chạy không.');
+  }
+}
+
+// ==================== MOCK DATA FUNCTIONS ====================
+
+async function fetchStockPriceMock(ticker) {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 800));
   
@@ -132,7 +172,7 @@ export async function fetchStockPrice(ticker) {
   return stock;
 }
 
-export async function fetchStockHistory(ticker, days = 30) {
+async function fetchStockHistoryMock(ticker, days = 30) {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1000));
   
@@ -179,6 +219,31 @@ export async function fetchStockHistory(ticker, days = 30) {
     volumes: Array(days).fill(2000000)
   };
 }
+
+// ==================== EXPORTED FUNCTIONS ====================
+// Tự động chuyển đổi giữa Mock và Real API dựa vào USE_REAL_API
+
+export async function fetchStockPrice(ticker) {
+  if (USE_REAL_API) {
+    console.log('📡 Fetching REAL data from backend for:', ticker);
+    return fetchStockPriceReal(ticker);
+  } else {
+    console.log('🎭 Using MOCK data for:', ticker);
+    return fetchStockPriceMock(ticker);
+  }
+}
+
+export async function fetchStockHistory(ticker, days = 30) {
+  if (USE_REAL_API) {
+    console.log('📡 Fetching REAL history from backend for:', ticker);
+    return fetchStockHistoryReal(ticker, days);
+  } else {
+    console.log('🎭 Using MOCK history for:', ticker);
+    return fetchStockHistoryMock(ticker, days);
+  }
+}
+
+// ==================== UTILITY FUNCTIONS ====================
 
 export function formatNumber(num) {
   if (!num) return '0';
